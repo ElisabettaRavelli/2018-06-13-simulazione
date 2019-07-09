@@ -3,6 +3,8 @@ package it.polito.tdp.flightdelays;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.flightdelays.model.Airline;
+import it.polito.tdp.flightdelays.model.ArcoPeso;
 import it.polito.tdp.flightdelays.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,6 +14,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
 public class FlightDelaysController {
+	
+	private Model model;
 
     @FXML
     private ResourceBundle resources;
@@ -23,7 +27,7 @@ public class FlightDelaysController {
     private TextArea txtResult;
 
     @FXML
-    private ComboBox<?> cmbBoxLineaAerea;
+    private ComboBox<Airline> cmbBoxLineaAerea;
 
     @FXML
     private Button caricaVoliBtn;
@@ -36,7 +40,18 @@ public class FlightDelaysController {
 
     @FXML
     void doCaricaVoli(ActionEvent event) {
-    		System.out.println("Carica voli!");
+    	String airline = cmbBoxLineaAerea.getValue().getId();
+    	this.model.creaGrafo(airline);
+    	txtResult.appendText("Grafo creato con "+ this.model.getVertici()+ " vertici e "+ this.model.getArchi()+ " archi\n");
+    	
+    	txtResult.appendText("10 PEGGIORI ROTTE:\n");
+    	int i = 0;
+    	for(ArcoPeso ap: this.model.getPeggioriRotte()) {
+    		if(i<10) {
+    			txtResult.appendText(ap.getId1()+ " -> "+ ap.getId2()+ " con peso = "+ ap.getPeso()+ "\n");
+    			i++;
+    		}
+    	}
     }
 
     @FXML
@@ -55,6 +70,7 @@ public class FlightDelaysController {
     }
     
 	public void setModel(Model model) {
-		// TODO Auto-generated method stub
+		this.model = model;
+		cmbBoxLineaAerea.getItems().addAll(this.model.allAirline());
 	}
 }

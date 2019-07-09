@@ -8,8 +8,11 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.javadocmd.simplelatlng.LatLng;
+
 import it.polito.tdp.flightdelays.model.Airline;
 import it.polito.tdp.flightdelays.model.Airport;
+import it.polito.tdp.flightdelays.model.Arco;
 import it.polito.tdp.flightdelays.model.Flight;
 
 public class FlightDelaysDAO {
@@ -84,6 +87,63 @@ public class FlightDelaysDAO {
 			conn.close();
 			return result;
 
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+	}
+	
+	public List<Arco> getConnessioni(String airline){
+		String sql = "select f.destination_airport_id as id2, f.origin_airport_id as id1, f.arrival_delay as ritardo " + 
+				"from flights f, airports a " + 
+				"where f.airline = ? " + 
+				"and a.id = f.destination_airport_id or a.id = f.origin_airport_id ";
+		
+		List<Arco> result = new ArrayList<>();
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, airline);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				result.add(new Arco(rs.getString("id1"),
+						rs.getString("id2"),
+						rs.getInt("ritardo")));
+			}
+
+			conn.close();
+			return result;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+	}
+	
+	public LatLng getLatLon(String id) {
+		String sql = "select latitude, longitude " + 
+				"from airports " + 
+				"where id = ? ";
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, id);
+			ResultSet rs = st.executeQuery();
+
+			if (rs.next()) {
+				LatLng latlon = new LatLng(rs.getDouble("latitude"), rs.getDouble("longitude"));
+				conn.close();
+				return latlon;
+
+			}
+			
+			conn.close();
+			return null;
+
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("Errore connessione al database");
